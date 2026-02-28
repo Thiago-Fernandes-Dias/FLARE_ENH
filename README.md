@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 ### 2. Load a pretrained model
 
-Download the [UNetEnh](https://cloud.tsinghua.edu.cn/f/2abf5af2c0064c24a262/?dl=1) model and place it in the `pretrained_model/unetenh` directory. Then, download both the [PriorEnh](https://cloud.tsinghua.edu.cn/f/968696b8cf8a4a9da82c/?dl=1) model and the [Prior](https://cloud.tsinghua.edu.cn/f/772b10a628ef4505a8a2/?dl=1) model, and place them in `pretrained_model/priorenh` directory.
+Download the [UNetEnh](https://drive.google.com/file/d/1U0uP8XoxWc90IPlEGnt2KIe0ATAA2VKl/view?usp=drive_link) model and place it in the `pretrained_model/unetenh` directory. Then, download both the [PriorEnh](https://drive.google.com/file/d/1h3JD6ZhS_TUaCmBhINqKZ0Pb1ad-FRao/view?usp=drive_link) model and the [Prior](https://drive.google.com/file/d/14c0A4qRo_lrqa83e-_UpBvu79qEGkK5q/view?usp=drive_link) model, and place them in `pretrained_model/priorenh` directory.
 
 ### 3. Run enhancement
 
@@ -58,12 +58,13 @@ The -e flag enables an optional contrast enhancement step prior to processing.
 If you use these modules in your research, please cite:
 
 ```
-@article{pan2025flare,
-  title={Fixed-Length Dense Fingerprint Representation},
+@ARTICLE{pan2025flare,
   author={Pan, Zhiyu and Guan, Xiongjun and Duan, Yongjie and Feng, Jianjiang and Zhou, Jie},
-  journal={arXiv preprint arXiv:2505.03597},
-  year={2025},
-  url={https://arxiv.org/abs/2505.03597}
+  journal={IEEE Transactions on Information Forensics and Security}, 
+  title={Fixed-Length Dense Fingerprint Representation With Alignment and Robust Enhancement}, 
+  year={2026},
+  volume={21},
+  pages={1751-1765},
 }
 ```
 
