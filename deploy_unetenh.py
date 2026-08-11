@@ -17,6 +17,21 @@ from utils.misc import load_model
 import numpy as np
 from tqdm import tqdm
 
+GPU = '0'
+FOLDERS = [
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db1_a/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB1_A"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db1_b/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB1_B"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db2_a/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB2_A"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db2_b/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB2_B"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db3_a/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB3_A"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db3_b/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB3_B"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db4_a/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB4_A"),
+    ("/mnt/d/Datasets/FVC/FVC2000/Dbs/Db4_b/bmp", "/mnt/d/Datasets/FVC_FLARE_ENH/unetenh/FVC_2002_DB4_B")
+]  # list of (input_folder, output_folder) pairsCKPT_PATH = 'pretrained_model/unetenh/unetenh.pth'
+METHOD_NAME = 'UNetEnh'
+PRE_ENH = False
+MODEL_PATH = "pretrained_model/unetenh/unetenh.pth"
+
 def image_read(img_path):
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
     # process the img size for 4 
@@ -29,40 +44,29 @@ def image_read(img_path):
     return img[None], (w_org, h_org)
 
 
-def deploy_enh(folder, model_path, method_name, pre_enh=False):
-    # load the model
-    folder = os.path.normpath(folder)
+def deploy_enh(folders, model_path, method_name, pre_enh=False):
     model = SqueezeUNet(input_channels=1, num_classes=2, pre_enh=pre_enh)
     model.cuda()
     load_model(model, model_path)
     model.eval()
-    # Load the dataset path
-    img_lst = os.listdir(folder)
-    save_path = osp.join('output', method_name)
-    os.makedirs(save_path, exist_ok=True)
-    
-    for img_name in tqdm(img_lst):
-        img_path = osp.join(folder, img_name)
-        # img = image_read(img_path)
-        img, org_shape = image_read(img_path)
-        img = torch.from_numpy(img).unsqueeze(0).cuda()
-        with torch.no_grad():
-            pred = model(img)
-        enh, _ = torch.split(pred, [1, 1], dim=1)
-        # enh = pred['enh']
-        enh = enh.squeeze().cpu().numpy()
-        enh = (enh * 255).astype(np.uint8)
-        enh = cv2.resize(enh, org_shape) 
-        cv2.imwrite(osp.join(save_path, img_name), enh)
-    
-import argparse
+
+    for input_folder, output_folder in folders:
+        input_folder = os.path.normpath(input_folder)
+        img_lst = os.listdir(input_folder)
+        os.makedirs(output_folder, exist_ok=True)
+
+        for img_name in tqdm(img_lst, desc=osp.basename(input_folder)):
+            img_path = osp.join(input_folder, img_name)
+            img, org_shape = image_read(img_path)
+            img = torch.from_numpy(img).unsqueeze(0).cuda()
+            with torch.no_grad():
+                pred = model(img)
+            enh, _ = torch.split(pred, [1, 1], dim=1)
+            enh = enh.squeeze().cpu().numpy()
+            enh = (enh * 255).astype(np.uint8)
+            enh = cv2.resize(enh, org_shape)
+            cv2.imwrite(osp.join(output_folder, img_name), enh)
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Deploy the Frequency Enhancement model to the fingerprints")
-    parser.add_argument('--gpu', '-g', type=str, default='0', help='The GPU id')
-    parser.add_argument('--folder', '-f', type=str, required=True, help='The dataset folder')
-    parser.add_argument('--pre_enh', '-e', action='store_true', help='Whether to pre-enhance the images')
-    args = parser.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    ckpt_path = 'pretrained_model/unetenh/unetenh.pth'
-    method_name = 'UNetEnh'
-    deploy_enh(args.folder, ckpt_path, method_name, pre_enh=args.pre_enh)
+    os.environ['CUDA_VISIBLE_DEVICES'] = GPU
+    deploy_enh(FOLDERS, MODEL_PATH, METHOD_NAME, pre_enh=PRE_ENH)

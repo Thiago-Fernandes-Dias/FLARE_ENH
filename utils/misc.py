@@ -63,7 +63,7 @@ def load_model(model, ckp_path, by_name=False):
         return ".".join(items)
 
     if isinstance(ckp_path, str):
-        ckp = torch.load(ckp_path, map_location=lambda storage, loc: storage)
+        ckp = torch.load(ckp_path, map_location=lambda storage, loc: storage, weights_only=False)
         ckp_model_dict = ckp["model"]
     else:
         ckp_model_dict = ckp_path
